@@ -5,7 +5,7 @@ import java.util.zip.InflaterInputStream
 import scala.io.Source
 
 class Gitter {
-  def getCommitMessage(path: String = "/Users/Ent/Documents/pynik/ScalaBase/git-tweeter") = {
+  def getCommitMessage(path: String = System.getProperty("user.dir")) = {
     val gitPath = path + "/.git"
     val headPath = Source.fromFile(s"$gitPath/HEAD").mkString.split(" ")(1).trim
     val commitHash = Source.fromFile(s"$gitPath/$headPath").mkString.trim
