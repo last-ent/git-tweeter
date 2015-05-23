@@ -1,27 +1,42 @@
 package gittweet
 
-import java.io.{File, FileInputStream}
-import java.util.zip.InflaterInputStream
 import scala.io.Source
+import SafeIO.readSafely
+import java.io.FileInputStream
+import java.util.zip.InflaterInputStream
 
 class Gitter {
-  def getCommitHash(gitPath:String) = {
-    val headPath = Source.fromFile(s"$gitPath/HEAD").mkString.split(" ")(1).trim
-    Array(headPath, Source.fromFile(s"$gitPath/$headPath").mkString.trim)
+  def getCommitHash(gitPath: String) = {
+    val headPath = readSafely(s"$gitPath/HEAD") {
+      Source.fromFile
+    } {
+      _.mkString.split(" ")(1).trim
+    }
+    val commitHash = readSafely(s"$gitPath/$headPath") {
+      Source.fromFile
+    } {
+      _.mkString.trim
+    }
+
+    Array(headPath, commitHash)
   }
 
-  def getCommitMessage(gitPath: String = {System.getProperty("user.dir") + "/.git"}) = {
-    val Array(headPath:String, commitHash:String) = getCommitHash(gitPath)
-    val commitFile = new File(s"$gitPath/objects/" + commitHash.slice(0, 2) + "/" + commitHash.drop(2))
-    val commitCompressed = new InflaterInputStream(new FileInputStream(commitFile))
+  def getCommitMessage(gitPath: String = {
+    System.getProperty("user.dir") + "/.git"
+  }) = {
+    val Array(headPath: String, commitHash: String) = getCommitHash(gitPath)
+    val commitFilePath = s"$gitPath/objects/" + commitHash.slice(0, 2) + "/" + commitHash.drop(2)
+
+    val compressedCommit = readSafely(commitFilePath) {
+      new FileInputStream(_)
+    } { source =>
+      Source.fromInputStream(new InflaterInputStream(source)).getLines().toList
+    }
     List(
       // headPath = refs/heads/<branch-name>
-      headPath.replace("refs/heads/",""),
-      Source.fromInputStream(commitCompressed)
-        .getLines()
-        .drop(4)
-        .mkString("\n")
-        .trim
+      headPath.replace("refs/heads/", ""),
+      // 5th line onwards is the commit message
+      compressedCommit.drop(4).mkString("\n").trim
     )
   }
 }

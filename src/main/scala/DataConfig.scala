@@ -1,9 +1,10 @@
 package gittweet
 
 import scala.io.Source
+import SafeIO.readSafely
 
 class DataConfig {
-  def getSecretLines(path:String) = Source.fromFile(path).mkString.split("\n")
+  def getSecretLines(path:String) = readSafely(path){Source.fromFile} {_.getLines.toList}
 
   def getConf(path:String = "src/main/Secrets/secrets.txt"):Map[String, String] = {
     val secretLines = getSecretLines(path)
