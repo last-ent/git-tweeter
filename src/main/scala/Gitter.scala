@@ -9,21 +9,19 @@ class Gitter {
   def getCommitHash(gitPath: String) = {
     val headPath = readSafely(s"$gitPath/HEAD") {
       Source.fromFile
-    } {
-      _.mkString.split(" ")(1).trim
-    }
+    } { line =>
+      List(line.mkString.split(" ")(1).trim)
+    }(0)
     val commitHash = readSafely(s"$gitPath/$headPath") {
       Source.fromFile
-    } {
-      _.mkString.trim
-    }
+    } { line =>
+      List(line.mkString.trim)
+    }(0)
 
     Array(headPath, commitHash)
   }
 
-  def getCommitMessage(gitPath: String = {
-    System.getProperty("user.dir") + "/.git"
-  }) = {
+  def getCommitMessage(gitPath: String = { System.getProperty("user.dir") + "/.git"}) = {
     val Array(headPath: String, commitHash: String) = getCommitHash(gitPath)
     val commitFilePath = s"$gitPath/objects/" + commitHash.slice(0, 2) + "/" + commitHash.drop(2)
 
