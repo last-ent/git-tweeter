@@ -4,8 +4,11 @@ version := "1.0"
 
 scalaVersion := "2.11.6"
 
-libraryDependencies += "org.twitter4j" % "twitter4j-stream" % "4.0.3"
-
-libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
-
-libraryDependencies += "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.1"
+libraryDependencies ++= Seq(
+  "org.twitter4j" % "twitter4j-stream" % "4.0.3",
+  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
+  "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.1",
+  "junit" % "junit" % "4.12" % "test",
+  "com.novocode" % "junit-interface" % "0.11" % "test",
+  "org.mockito" % "mockito-core" % "1.10.19"
+)
