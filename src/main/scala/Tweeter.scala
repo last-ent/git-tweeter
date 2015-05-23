@@ -13,6 +13,8 @@ object Tweeter {
       .setOAuthAccessTokenSecret(confMap("accessSecret"))
       .build
   }
+  val getInstance = new TwitterFactory(config).getInstance
+
   // def simpleStatusListener = new StatusListener() {
   //   def onStatus(status:Status) { println(status.getText)}
   //   def onDeletionNotice(statusDeleteNotice: StatusDeletionNotice) {}

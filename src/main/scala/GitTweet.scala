@@ -4,9 +4,12 @@ import twitter4j._
 
 object GitTweet {
   def main(args: Array[String]): Unit = {
-    println(new Gitter().getCommitMessage(System.getProperty("user.dir")))
-    val twitter = new TwitterFactory(Tweeter.config).getInstance
-    // val status = twitter.updateStatus("Hello World from git-tweeter")
-    // println(status)
+    val xyz = new Gitter().getCommitHash(System.getProperty("user.dir")+"/.git").toList
+//    xyz.foreach(print)
+    println(xyz)
+    println((new Gitter).getCommitMessage())
+    val twitter = Tweeter.getInstance
+//    val status = twitter.updateStatus("Hello World from git-tweeter")
+//    println(status)
   }
 }
