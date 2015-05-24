@@ -11,12 +11,12 @@ class Gitter {
       Source.fromFile
     } { line =>
       List(line.mkString.split(" ")(1).trim)
-    }(0)
+    }.headOption.mkString
     val commitHash = readSafely(s"$gitPath/$headPath") {
       Source.fromFile
     } { line =>
       List(line.mkString.trim)
-    }(0)
+    }.headOption.mkString
 
     Array(headPath, commitHash)
   }
@@ -30,7 +30,7 @@ class Gitter {
     val compressedCommit = readSafely(commitFilePath) {
       new FileInputStream(_)
     } { source =>
-      Source.fromInputStream(new InflaterInputStream(source)).getLines().toList
+      Source.fromInputStream(new InflaterInputStream(source)).getLines.toList
     }
     List(
       // headPath = refs/heads/<branch-name>

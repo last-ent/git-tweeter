@@ -1,6 +1,6 @@
 package gittweet.SafeIO
 
-import java.io.File
+import java.io.{FileNotFoundException, File}
 
 import scala.util.control.NonFatal
 
@@ -14,10 +14,12 @@ object readSafely {
       data = f(source.get)
     } catch {
       case NonFatal(ex) => {
-        println("None Fatal Exception: $ex")
+        source = None
+        println(s"Non-Fatal Exception: $ex")
       }
     } finally {
-      source.get.close()
+      if (source != None)
+        source.get.close()
     }
     data
   }
