@@ -2,7 +2,7 @@ package gittweet
 
 object GitTweet {
   def main(args: Array[String]): Unit = {
-    val xyz = new Gitter().getCommitHash(System.getProperty("user.dir") + "/.git1").toList
+    val xyz = (new Gitter).getCommitHash(System.getProperty("user.dir") + "/.git1").toList
     println(xyz)
     println((new Gitter).getCommitMessage())
     val twitter = Tweeter.getInstance

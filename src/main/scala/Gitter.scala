@@ -12,6 +12,7 @@ class Gitter {
     } { line =>
       List(line.mkString.split(" ")(1).trim)
     }.headOption.mkString
+
     val commitHash = readSafely(s"$gitPath/$headPath") {
       Source.fromFile
     } { line =>
@@ -21,9 +22,8 @@ class Gitter {
     Array(headPath, commitHash)
   }
 
-  def getCommitMessage(gitPath: String = {
-    System.getProperty("user.dir") + "/.git"
-  }) = {
+  def getCommitMessage(gitPath: String = System.getProperty("user.dir") + "/.git") = {
+    // TODO: Add logic so that when gitPath doesn't exist, rest of the code isn't executed.
     val Array(headPath: String, commitHash: String) = getCommitHash(gitPath)
     val commitFilePath = s"$gitPath/objects/" + commitHash.slice(0, 2) + "/" + commitHash.drop(2)
 

@@ -5,8 +5,8 @@ import twitter4j.conf.ConfigurationBuilder
 
 object Tweeter {
   val config = {
-    val confMap = new DataConfig().getConf()
-    new ConfigurationBuilder()
+    val confMap = (new DataConfig).getConf()
+    (new ConfigurationBuilder)
       .setOAuthConsumerKey(confMap("consumerKey"))
       .setOAuthConsumerSecret(confMap("consumerSecret"))
       .setOAuthAccessToken(confMap("accessToken"))
