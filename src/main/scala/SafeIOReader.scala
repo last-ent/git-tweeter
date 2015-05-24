@@ -13,7 +13,9 @@ object readSafely {
       source = Some(read(filePath))
       data = f(source.get)
     } catch {
-      case NonFatal(ex) => { println("None Fatal Exception: $ex")}
+      case NonFatal(ex) => {
+        println("None Fatal Exception: $ex")
+      }
     } finally {
       source.get.close()
     }

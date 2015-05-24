@@ -21,7 +21,9 @@ class Gitter {
     Array(headPath, commitHash)
   }
 
-  def getCommitMessage(gitPath: String = { System.getProperty("user.dir") + "/.git"}) = {
+  def getCommitMessage(gitPath: String = {
+    System.getProperty("user.dir") + "/.git"
+  }) = {
     val Array(headPath: String, commitHash: String) = getCommitHash(gitPath)
     val commitFilePath = s"$gitPath/objects/" + commitHash.slice(0, 2) + "/" + commitHash.drop(2)
 
