@@ -7,7 +7,7 @@ class DataConfig {
   def getSecretLines(path: String) = readSafely(path) {
     Source.fromFile
   } {
-    _.getLines.toList
+    _.getLines.toVector
   }
 
   def getConf(path: String = "src/main/Secrets/secrets.txt"): Map[String, String] = {

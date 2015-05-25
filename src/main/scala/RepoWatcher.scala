@@ -28,7 +28,8 @@ import scala.util.control.NonFatal
  *  ? Store tweet timestamp & commit hash
  *  - Tweet to Twitter as per defined template
  */
-class RepoSnooper {
+class RepoWatcher {
+  def repo
   /**
    * watchDir is a base template based on which we need to develop our Actor Model for Repo Watcher
    */
