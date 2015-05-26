@@ -113,7 +113,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
       println(s"Context: ${event.context}")
       breakable {
         if (event.kind == OVERFLOW)
-          break 
+          break
 
         val relativePath = event.context.asInstanceOf[Path]
         val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
