@@ -1,22 +1,27 @@
 package gittweet
 
 import java.io.File
-import scala.io.Source
-import util.control.Breaks._
-import collection.JavaConversions._
-import scala.util.control.NonFatal
-import akka.actor.{ActorRef, Actor}
-import java.nio.file.{Path, FileSystems}
 import java.nio.file.StandardWatchEventKinds._
+import java.nio.file.{FileSystems, Path}
+
+import akka.actor.{Actor, ActorRef}
 import gittweet.SafeIO.{readSafely, writeSafely}
 
+import scala.collection.JavaConversions._
+import scala.io.Source
+import scala.util.control.Breaks._
+import scala.util.control.NonFatal
+
 case object MonitorRepos
+
 case class RegisterRepo(path: String)
+
 case class Tweet(commitMessage: Vector[String])
+
 case class RegisterRepos(repos: Vector[String])
 
 /**
-  * RepoWatcher =>
+ * RepoWatcher =>
  *  - Register new & existing set of Repos -> Repo Snooper
  *  - Watch for changes in the Repos -> Repo Snooper
  *  - Fire a message to tweet when a new commit is made -> Commit Tweeter
@@ -42,8 +47,9 @@ class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
     case RegisterRepo(path) => {
       val repoCatalogue = new File(catalogPath)
       try {
-        if(new File(catalogPath).exists && repoCatalogue.exists) {
-          writeSafely(repoCatalogue, catalogPath+"\n")
+        val newPath = new File(path)
+        if (newPath.exists && repoCatalogue.exists) {
+          writeSafely(repoCatalogue, path + "\n")
           repoSnooper ! RegisterRepo(path)
         }
       } catch {
@@ -53,38 +59,17 @@ class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
   }
 }
 
-class RepoSnooper(twitterClient: ActorRef, cataloguePath:String) extends Actor {
+class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor {
   val watcher = FileSystems.getDefault.newWatchService
-
-  def addToWatcher(path: String) = {
-    try{
-      FileSystems.getDefault.getPath(path)
-        .register(watcher, ENTRY_CREATE, ENTRY_MODIFY)
-    } catch {
-      case NonFatal(ex) => println(s"Non-Fatal Exception: $ex")
-    }
-  }
-
-  def detectChanges = {
-    val watchKey = watcher.take()
-    watchKey.pollEvents() foreach {event =>
-      breakable{
-        if (event.context.toString != ".git" || event.kind == OVERFLOW)
-          break
-
-        val relativePath = event.context.asInstanceOf[Path]
-        val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
-        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(path.toString)
-        self ! Tweet(commitDetails)
-      }
-    }
-    watchKey.reset
-  }
 
   override def preStart = {
     val catalogue = new File(cataloguePath)
-    if (catalogue.exists){
-      val repos = readSafely(cataloguePath) { Source.fromFile } {_.getLines.toVector}
+    if (catalogue.exists) {
+      val repos = readSafely(catalogue) {
+        Source.fromFile
+      } {
+        _.getLines.toVector
+      }
       self ! RegisterRepos(repos)
     }
   }
@@ -99,15 +84,40 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath:String) extends Actor {
       self ! MonitorRepos
     }
     case RegisterRepos(repos) => {
-      if(repos.isEmpty)
+      if (repos.isEmpty)
         self ! MonitorRepos
-      else{
+      else {
         addToWatcher(repos.head)
         self ! RegisterRepos(repos.tail)
       }
     }
     case Tweet(commitDetails) =>
       self ! Tweet(commitDetails)
+  }
+
+  def addToWatcher(path: String) = {
+    try {
+      FileSystems.getDefault.getPath(path)
+        .register(watcher, ENTRY_CREATE, ENTRY_MODIFY)
+    } catch {
+      case NonFatal(ex) => println(s"Non-Fatal Exception: $ex")
+    }
+  }
+
+  def detectChanges = {
+    val watchKey = watcher.take()
+    watchKey.pollEvents() foreach { event =>
+      breakable {
+        if (event.context.toString != "objects" || event.kind == OVERFLOW)
+          break
+
+        val relativePath = event.context.asInstanceOf[Path]
+        val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
+        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(path.toString)
+        self ! Tweet(commitDetails)
+      }
+    }
+    watchKey.reset
   }
 }
 

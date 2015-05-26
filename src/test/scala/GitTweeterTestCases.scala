@@ -1,7 +1,7 @@
-import org.junit.Assert._
-import org.scalatest.FlatSpec
-import org.junit.{Test, Before}
 import gittweet.{DataConfig, Gitter}
+import org.junit.Assert._
+import org.junit.Test
+import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitSuite
 
 

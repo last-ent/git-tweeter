@@ -1,16 +1,15 @@
 package gittweet.SafeIO
 
-import java.io.{FileWriter, FileNotFoundException, File}
+import java.io.{File, FileWriter}
 
 import scala.util.control.NonFatal
 
 object readSafely {
-  def apply[R <: {def close() : Unit}](path: String)(fileReader: File => R)(dataExtractor: R => Vector[String]) = {
+  def apply[R <: {def close() : Unit}](filePath: File)(fileReader: File => R)(dataExtractor: R => Vector[String]) = {
     // TODO: Convert the code so that only `File` object is required
     var data: Vector[String] = Vector[String]()
     var source: Option[R] = None
     try {
-      val filePath = new File(path)
       source = Some(fileReader(filePath))
       data = dataExtractor(source.get)
     } catch {
@@ -27,7 +26,7 @@ object readSafely {
 }
 
 object writeSafely {
-  def apply(filePath: File, data: String, append: Boolean=false) = {
+  def apply(filePath: File, data: String, append: Boolean = true) = {
     var writer: Option[FileWriter] = None
     try {
       writer = Some(new FileWriter(filePath, append))
