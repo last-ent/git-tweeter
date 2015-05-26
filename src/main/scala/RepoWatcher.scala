@@ -148,7 +148,8 @@ class CommitTweeter extends Actor {
       msg = s"Tweeted by: https://github.com/last-ent/git-tweeter/\nBranch `$branch`\nCommit Message: $msg"
 
       if (msg.length > 139)
-      msg = msg.substring(0, 139)
+        msg = msg.substring(0, 139)
+
       tweeter.updateStatus(msg)
     }
   }
