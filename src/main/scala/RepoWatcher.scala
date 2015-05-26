@@ -108,6 +108,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     val watchKey = watcher.take()
     var commits = scala.collection.mutable.Set[Vector[String]]()
     watchKey.pollEvents() foreach { event =>
+      println(s"Context: ${event.context}")
       breakable {
         if (event.kind == OVERFLOW)
           break 
