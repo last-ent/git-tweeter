@@ -128,13 +128,23 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
 
 class CommitTweeter extends Actor {
   val tweeter = Tweeter.getInstance
+  val branchCommits = collection.mutable.Map[String, String]()
 
   def receive = {
-    case Tweet(commitMessage) => {
+    case Tweet(commitMessage) => breakable {
       println(s"Tweeting... $commitMessage")
+
       var Vector(branch: String, msg: String, hash: String) = commitMessage
+
+      if (branchCommits.getOrElse(branch, "New Branch") == hash) {
+        println(s"New Branch: $branch or the commit already exists: $hash")
+        break()
+      }
+
+      branchCommits(branch) = hash
+
       if (msg.length > 139)
-        msg = msg.substring(0, 139)
+      msg = msg.substring(0, 139)
       tweeter.updateStatus(s"New commit on branch `$branch`\nCommit Message: $msg")
     }
   }
