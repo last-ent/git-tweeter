@@ -127,8 +127,10 @@ class CommitTweeter extends Actor {
   val tweeter = Tweeter.getInstance
   def receive = {
     case Tweet(commitMessage) => {
-      val Vector(branch: String, commMessage: String, hash: String) = commitMessage
-      tweeter.updateStatus(s"New commit on branch $branch. Commit Message: $commMessage".substring(0, 139))
+      var Vector(branch: String, msg: String, hash: String) = commitMessage
+      if (msg.length > 139)
+        msg = msg.substring(0, 139)
+      tweeter.updateStatus(s"New commit on branch $branch. Commit Message: $msg")
     }
   }
 }
