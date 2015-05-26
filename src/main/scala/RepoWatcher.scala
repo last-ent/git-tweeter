@@ -114,7 +114,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
 
         val relativePath = event.context.asInstanceOf[Path]
         val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
-        val sPath = path.toString.split("/.git/objects")(0)
+        val sPath = path.toString.split("/.git/")(0)
 
         val commitDetails: Vector[String] = (new Gitter).getCommitMessage(sPath + "/.git")
         commits += commitDetails
