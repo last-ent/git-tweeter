@@ -23,11 +23,13 @@ class Gitter {
     } { source =>
       Source.fromInputStream(new InflaterInputStream(source)).getLines.toVector
     }
+    println(".")
     Vector(
       // headPath = refs/heads/<branch-name>
       headPath.replace("refs/heads/", ""),
       // 5th line onwards is the commit message
-      compressedCommit.drop(4).mkString("\n").trim
+      compressedCommit.drop(4).mkString("\n").trim,
+      commitHash
     )
   }
 

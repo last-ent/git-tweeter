@@ -26,13 +26,13 @@ class GitTweeterBehaviourTests extends FlatSpec {
 
   "Gitter's getCommitMessage" should "return correct head" in {
     val path: String = System.getProperty("user.dir") + "/src/test/git-repo-mock/.gitmock"
-    val Vector(head: String, _) = (new Gitter).getCommitMessage(path)
+    val Vector(head: String, _, _) = (new Gitter).getCommitMessage(path)
     assertEquals(head, "hash/slinging/slasher")
   }
 
   ignore should "return correct message" in {
     val path: String = System.getProperty("user.dir") + "/src/test/git-repo-mock/.gitmock"
-    val Vector(_, commitHash: String) = (new Gitter).getCommitMessage(path)
+    val Vector(_, commitHash: String, _) = (new Gitter).getCommitMessage(path)
     assertEquals("asfs", commitHash)
   }
 

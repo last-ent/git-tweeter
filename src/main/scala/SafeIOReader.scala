@@ -15,7 +15,9 @@ object readSafely {
     } catch {
       case NonFatal(ex) => {
         source = None
-        println(s"Non-Fatal Exception: $ex")
+        println(s"Non-Fatal Exception(readSafely): $ex")
+        val x = ex.getStackTrace.toVector
+//        println(s"StackTrace (readSafely): $x")
       }
     } finally {
       if (source != None)
@@ -32,7 +34,7 @@ object writeSafely {
       writer = Some(new FileWriter(filePath, append))
       writer.get.write(data)
     } catch {
-      case NonFatal(ex) => println(s"Non-Fatal Exception: $ex")
+      case NonFatal(ex) => println(s"Non-Fatal Exception(writeSafely): $ex")
     } finally {
       if (writer != None)
         writer.get.close()

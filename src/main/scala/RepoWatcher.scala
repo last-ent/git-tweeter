@@ -53,7 +53,7 @@ class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
           repoSnooper ! RegisterRepo(path)
         }
       } catch {
-        case NonFatal(ex) => println(s"Non-Fatal Exception: $ex")
+        case NonFatal(ex) => println(s"Non-Fatal Exception(RepoCataloguer): $ex")
       }
     }
   }
@@ -92,15 +92,15 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
       }
     }
     case Tweet(commitDetails) =>
-      self ! Tweet(commitDetails)
+      twitterClient ! Tweet(commitDetails)
   }
 
   def addToWatcher(path: String) = {
     try {
-      FileSystems.getDefault.getPath(path)
+      FileSystems.getDefault.getPath(path + "/.git/objects")
         .register(watcher, ENTRY_CREATE, ENTRY_MODIFY)
     } catch {
-      case NonFatal(ex) => println(s"Non-Fatal Exception: $ex")
+      case NonFatal(ex) => println(s"Non-Fatal Exception(RepoSnooper): $ex")
     }
   }
 
@@ -108,12 +108,14 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     val watchKey = watcher.take()
     watchKey.pollEvents() foreach { event =>
       breakable {
-        if (event.context.toString != "objects" || event.kind == OVERFLOW)
+        if (event.kind == OVERFLOW)
           break
 
         val relativePath = event.context.asInstanceOf[Path]
         val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
-        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(path.toString)
+        val sPath = path.toString.split("/.git/objects")(0)
+
+        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(sPath+"/.git")
         self ! Tweet(commitDetails)
       }
     }
@@ -121,3 +123,12 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
   }
 }
 
+class CommitTweeter extends Actor {
+  val tweeter = Tweeter.getInstance
+  def receive = {
+    case Tweet(commitMessage) => {
+      val Vector(branch: String, commMessage: String, hash: String) = commitMessage
+      tweeter.updateStatus(s"New commit on branch $branch. Commit Message: $commMessage".substring(0, 139))
+    }
+  }
+}
