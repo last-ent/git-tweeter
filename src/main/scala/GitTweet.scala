@@ -4,9 +4,9 @@ import akka.actor.{ActorSystem, Props}
 
 object GitTweet {
   def main(args: Array[String]): Unit = {
-    val xyz = (new Gitter).getCommitHash(System.getProperty("user.dir") + "/.git1").toList
-    println(xyz)
-    println((new Gitter).getCommitMessage())
+//    val xyz = (new Gitter).getCommitHash(System.getProperty("user.dir") + "/.git1").toList
+//    println(xyz)
+    println("Latest Commit Message @ startup: " + (new Gitter).getCommitMessage())
     val system = ActorSystem("GitTweeterSystem")
     val tweeter = system.actorOf(Props[CommitTweeter], name = "TweeterActor")
     val snooper = system.actorOf(
@@ -18,7 +18,7 @@ object GitTweet {
       name = "CataloguerActor"
     )
 
-    cataloguer ! RegisterRepo(System.getProperty("user.dir"))
+    snooper ! RegisterRepo(System.getProperty("user.dir"))
 
 
     //    val twitter = Tweeter.getInstance

@@ -23,7 +23,7 @@ class Gitter {
     } { source =>
       Source.fromInputStream(new InflaterInputStream(source)).getLines.toVector
     }
-    println(".")
+
     Vector(
       // headPath = refs/heads/<branch-name>
       headPath.replace("refs/heads/", ""),

@@ -122,7 +122,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     }
     watchKey.reset
     println(s"Commits for tweeting:\n$commits")
-    commits.foreach(twitterClient ! _)
+    commits.foreach(twitterClient ! Tweet(_))
   }
 }
 
