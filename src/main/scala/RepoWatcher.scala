@@ -81,7 +81,6 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     }
     case MonitorRepos => {
       detectChanges
-      println("done with detect cycle, going to monitor again.")
       self ! MonitorRepos
     }
     case RegisterRepos(repos) => {
@@ -110,13 +109,13 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     val watchKey = watcher.take()
     var commits = scala.collection.mutable.Set[Vector[String]]()
     watchKey.pollEvents() foreach { event =>
-      println(s"Context: ${event.context}")
       breakable {
         if (event.kind == OVERFLOW)
           break
 
         val relativePath = event.context.asInstanceOf[Path]
         val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
+        println(s"Context: $path")
         val sPath = path.toString.split("/.git/")(0)
 
         val commitDetails: Vector[String] = (new Gitter).getCommitMessage(sPath + "/.git")
