@@ -94,6 +94,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     }
     case Tweet(commitDetails) =>
       twitterClient ! Tweet(commitDetails)
+      self ! MonitorRepos
   }
 
   def addToWatcher(path: String) = {
