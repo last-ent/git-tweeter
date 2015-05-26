@@ -42,6 +42,11 @@ case class RegisterRepos(repos: Vector[String])
  * - Tweet to Twitter as per defined template
  */
 
+/**
+ * Helps register new git repo from the given path as well as keep the path persistent for restart of application.
+ * @param catalogPath - Path of new git repo to be added.
+ * @param repoSnooper - Needs our main RepoSnooper Actor to register it for watching.
+ */
 class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
   def receive = {
     case RegisterRepo(path) => {
@@ -59,9 +64,17 @@ class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
   }
 }
 
+/**
+ *
+ * @param twitterClient - Used for tweeting tweets.
+ * @param cataloguePath - Loads up all given paths in file cataloguePath for watching at start of application.
+ */
 class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor {
   val watcher = FileSystems.getDefault.newWatchService
 
+  /**
+   * We use this method to load all given paths.
+   */
   override def preStart = {
     val catalogue = new File(cataloguePath)
     if (catalogue.exists) {
@@ -96,6 +109,17 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
       self ! MonitorRepos
   }
 
+  /**
+   *
+   * For any given repo, we monitor path/.git/objects/ for changes.
+   * Logic being that if a new commit is made, it will add new folder and we can hence detect changes.
+   *
+   * NOTE: There might be a chance that the actual commit files being generated inside `objects/xyz/`
+   * are not being notified for change. As a result certain commits might be lost.
+   *
+   * @param path - path to git repo we want to monitor
+   * @return - Unit
+   */
   def addToWatcher(path: String) = {
     try {
       FileSystems.getDefault.getPath(path + "/.git/objects")
@@ -105,6 +129,11 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     }
   }
 
+  /**
+   * Main chunk of logic that goes over all registered paths looking for changes.
+   * If there are any changes in any of the registered paths, retrieves the latest commit
+   * and messages it to twitterClient for tweeting to Twitter
+   */
   def detectChanges = {
     val watchKey = watcher.take()
     var commits = scala.collection.mutable.Set[Vector[String]]()
@@ -128,6 +157,10 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
   }
 }
 
+/**
+ * Tweets to Twitter.
+ * Also ensures that duplicate Tweets are not sent.
+ */
 class CommitTweeter extends Actor {
   val tweeter = Tweeter.getInstance
   val branchCommits = collection.mutable.Map[String, String]()
@@ -140,7 +173,7 @@ class CommitTweeter extends Actor {
 
       if (branchCommits.getOrElse(branch, "New Branch") == hash) {
         println(s"New Branch: $branch or the commit already exists: $hash")
-        break()
+        break
       }
 
       branchCommits(branch) = hash

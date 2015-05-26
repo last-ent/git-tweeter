@@ -3,6 +3,9 @@ package gittweet
 import twitter4j._
 import twitter4j.conf.ConfigurationBuilder
 
+/**
+ * Returns a configured twitter client.
+ */
 object Tweeter {
   val config = {
     val confMap = (new DataConfig).getConf()
