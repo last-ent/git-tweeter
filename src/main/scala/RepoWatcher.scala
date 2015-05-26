@@ -81,6 +81,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
     }
     case MonitorRepos => {
       detectChanges
+      println("done with detect cycle, going to monitor again.")
       self ! MonitorRepos
     }
     case RegisterRepos(repos) => {
