@@ -121,6 +121,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
       }
     }
     watchKey.reset
+    println(s"Commits for tweeting:\n$commits")
     commits.foreach(twitterClient ! _)
   }
 }
@@ -130,6 +131,7 @@ class CommitTweeter extends Actor {
 
   def receive = {
     case Tweet(commitMessage) => {
+      println(s"Tweeting... $commitMessage")
       var Vector(branch: String, msg: String, hash: String) = commitMessage
       if (msg.length > 139)
         msg = msg.substring(0, 139)
