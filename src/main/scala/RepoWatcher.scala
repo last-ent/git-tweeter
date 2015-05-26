@@ -22,24 +22,24 @@ case class RegisterRepos(repos: Vector[String])
 
 /**
  * RepoWatcher =>
- *  - Register new & existing set of Repos -> Repo Snooper
- *  - Watch for changes in the Repos -> Repo Snooper
- *  - Fire a message to tweet when a new commit is made -> Commit Tweeter
- *  - Repo Snooper & Commit Tweeter are two Actors
+ * - Register new & existing set of Repos -> Repo Snooper
+ * - Watch for changes in the Repos -> Repo Snooper
+ * - Fire a message to tweet when a new commit is made -> Commit Tweeter
+ * - Repo Snooper & Commit Tweeter are two Actors
  *
  * Repo Snooper =>
- *  - Check if each path is a valid git repo and register for directory notification only if it is a git repo
- *  - Check if .git/objects/ has changed, if it has then check for latest commit
- *  ? Check if latest commit hash is different from previous tweeted commit for the given branch
- *  - Tweet the latest commit by sending it to Commit Tweeter
+ * - Check if each path is a valid git repo and register for directory notification only if it is a git repo
+ * - Check if .git/objects/ has changed, if it has then check for latest commit
+ * ? Check if latest commit hash is different from previous tweeted commit for the given branch
+ * - Tweet the latest commit by sending it to Commit Tweeter
  *
  * Commit Tweeter =>
- *  - Define Tweet template
- *  - Receive commits to be tweeted
- *  - Check if network is working to tweet
- *  - If not able to tweet after 3 retries, signal the system.
- *  ? Store tweet timestamp & commit hash
- *  - Tweet to Twitter as per defined template
+ * - Define Tweet template
+ * - Receive commits to be tweeted
+ * - Check if network is working to tweet
+ * - If not able to tweet after 3 retries, signal the system.
+ * ? Store tweet timestamp & commit hash
+ * - Tweet to Twitter as per defined template
  */
 
 class RepoCataloguer(catalogPath: String, repoSnooper: ActorRef) extends Actor {
@@ -106,6 +106,7 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
 
   def detectChanges = {
     val watchKey = watcher.take()
+    var commits = scala.collection.mutable.Set[Vector[String]]()
     watchKey.pollEvents() foreach { event =>
       breakable {
         if (event.kind == OVERFLOW)
@@ -115,22 +116,24 @@ class RepoSnooper(twitterClient: ActorRef, cataloguePath: String) extends Actor 
         val path = watchKey.watchable.asInstanceOf[Path].resolve(relativePath)
         val sPath = path.toString.split("/.git/objects")(0)
 
-        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(sPath+"/.git")
-        self ! Tweet(commitDetails)
+        val commitDetails: Vector[String] = (new Gitter).getCommitMessage(sPath + "/.git")
+        commits += commitDetails
       }
     }
     watchKey.reset
+    commits.foreach(twitterClient ! _)
   }
 }
 
 class CommitTweeter extends Actor {
   val tweeter = Tweeter.getInstance
+
   def receive = {
     case Tweet(commitMessage) => {
       var Vector(branch: String, msg: String, hash: String) = commitMessage
       if (msg.length > 139)
         msg = msg.substring(0, 139)
-      tweeter.updateStatus(s"New commit on branch $branch. Commit Message: $msg")
+      tweeter.updateStatus(s"New commit on branch `$branch`\nCommit Message: $msg")
     }
   }
 }

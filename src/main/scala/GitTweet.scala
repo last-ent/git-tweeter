@@ -10,7 +10,7 @@ object GitTweet {
     val system = ActorSystem("GitTweeterSystem")
     val tweeter = system.actorOf(Props[CommitTweeter], name = "TweeterActor")
     val snooper = system.actorOf(
-      Props(new RepoSnooper(tweeter, System.getProperty("user.dir")+"/src/main/Secrets/repoCatalogs")),
+      Props(new RepoSnooper(tweeter, System.getProperty("user.dir") + "/src/main/Secrets/repoCatalogs")),
       name = "RepoSnooper"
     )
     val cataloguer = system.actorOf(
